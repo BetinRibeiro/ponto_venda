@@ -4,16 +4,27 @@ const cryptocurrencies = [
     ["SOL","64.7","0.881"],
     ["AGIX","0.27","611.67"],
     ["AGIX","0.27","200"],
-    ["ETH","2850","0.0162"]
+    ["ETH","2850","0.0162"],
+    ["BTC","49980","0.0012018"],
+    ["SDAO","0.6345","22.84","1.0215"],
+    ["NTX","0.031","600","0.0935"]
 ];
 
 // ["SDAO","0.6522","22.84922"]
-
 async function fetchCryptoPrice(crypto) {
-    const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${crypto}USDT`);
-    const data = await response.json();
-    return data.price;
+    try {
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${crypto}USDT`);
+        if (!response.ok) {
+            return false; // Retorna false se a solicitação não for bem-sucedida
+        }
+        const data = await response.json();
+        return data.price;
+    } catch (error) {
+        console.error("Erro ao buscar preço da criptomoeda:", error);
+        return false; // Retorna false em caso de erro
+    }
 }
+
 
 function dolar(number) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(number);
@@ -47,7 +58,10 @@ async function updateTable() {
     let total_atualizado_geral = 0; // Alteração para let
     
     for (const crypto of cryptocurrencies) {
-        const preco_atual = await fetchCryptoPrice(crypto[0]);
+        
+        const price = await fetchCryptoPrice(crypto[0]);
+        const preco_atual = price !== false ? price : crypto[3];
+
         const quantidade = crypto[2];
         const preco_compra = crypto[1];
         const total_compra = preco_compra * quantidade;
